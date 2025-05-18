@@ -50,6 +50,7 @@ class State:
         self.gyro_raw = Vector(0.0, 0.0, 0.0)
         self.acc_raw = Vector(0.0, 0.0, 0.0)
         
+        self.measurements = Vector(0.0, 0.0, 0.0)
         self.gyro_angle = Vector(0.0, 0.0, 0.0)
         self.acc_angle = Vector(0.0, 0.0, 0.0)
         
@@ -65,7 +66,22 @@ class State:
         self.calculate_gyro_angles()
         self.calculate_acce_angles()
         
-    
+        self.calculate_angles()
+        
+    def calculate_angles(self) -> None:
+        
+        self.gyro_raw.set_x(self.gyro_angle.x *  0.9996 + self.acc_angle.x * 0.0004)
+        self.gyro_raw.set_y(self.gyro_angle.y *  0.9996 + self.acc_angle.y * 0.0004)
+        
+        self.measurements.set(
+            self.measurements.x * 0.9 + self.gyro_angle.x * 0.1,
+            self.measurements.y * 0.9 + self.gyro_angle.y * 0.1,
+            self.gyro_angle.z
+        )
+        
+        self.row = 0.7 * self.row  + 0.3 * self.gyro_raw.x
+        self.pitch = 0.7 * self.pitch  + 0.3 * self.gyro_raw.y
+        self.yaw = 0.7 * self.yaw  + 0.3 * self.gyro_raw.z
     
     def calculate_gyro_angles(self)->None:
         
