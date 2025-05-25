@@ -3,7 +3,8 @@ from state import State
 from control import Control
 from sensors import RawSensorData, Sensors
 from pid_controller import PID
-
+from motor_control import MotorController
+from vector import Vector
 class Drone:
     
     def __init__(self):
@@ -13,9 +14,15 @@ class Drone:
         self.state: State = State()
         self.sensors: Sensors = Sensors()
         self.control: Control = Control()
-        self.pid: PID = PID()
+        self.pid: PID = PID(
+            Vector(4.0, 1.3, 1.3),
+            Vector(0.02, 0.04, 0.04),
+            Vector(0, 18, 18)
+        )
+        self.motor: MotorController = MotorController(0, 1, 2, 3)
         
         self.sensors.initialize()
+        self.motor.initialize()
     
     def is_drone_started(self) -> None:
         
@@ -51,4 +58,11 @@ class Drone:
             if self.is_drone_started():
                 
                 self.pid.run()
+                
+                # Check Battery
+                
+            self.motor.apply_roter_speed_a(self.pid.esc_a * 0.001)
+            self.motor.apply_roter_speed_b(self.pid.esc_b * 0.001)
+            self.motor.apply_roter_speed_c(self.pid.esc_c * 0.001)
+            self.motor.apply_roter_speed_d(self.pid.esc_d * 0.001)
             
