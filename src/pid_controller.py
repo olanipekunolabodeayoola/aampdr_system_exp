@@ -1,6 +1,7 @@
 """
 This is PID controller Class
 """
+from vector import Vector
 from state import State
 from control import Control
 
@@ -13,15 +14,15 @@ class PID:
         self.MAX_SETPOINT_BOUNDARY = 1508
         self.TROTTLE_UP_BLOUDARY = 1050
         
-        self.set_points = State()
+        self.set_points = Vector()
     
     def calculate_set_point_angle(self, angle: float, channel_pulse: float) -> float:
         
         set_point = 0.0
         if channel_pulse > self.MAX_SETPOINT_BOUNDARY:
-            set_point = channel_pulse - self.MAX_SETPOINT_BOUNDARY;
+            set_point = channel_pulse - self.MAX_SETPOINT_BOUNDARY
         elif channel_pulse < self.MIN_SETPOINT_BOUNDARY:
-            set_point = channel_pulse - self.MIN_SETPOINT_BOUNDARY;
+            set_point = channel_pulse - self.MIN_SETPOINT_BOUNDARY
         else:
             set_point = 0.0
             
@@ -36,13 +37,13 @@ class PID:
         else:
             return 0.0
     
-    def calculate_set_points(self, drone_state: State, control_signals: Control) -> State:
+    def calculate_set_points(self, drone_state: State, control_signals: Control) -> Vector:
         
-        self.set_points.roll = self.calculate_set_point_angle(drone_state.roll, control_signals.roll)
-        self.set_points.pitch = self.calculate_set_point_angle(drone_state.pitch, control_signals.pitch)
-        self.set_points.yaw = self.calculate_yaw_set_point(drone_state.throttle, control_signals.yaw)
+        self.set_points.x = self.calculate_set_point_angle(drone_state.roll, control_signals.roll)
+        self.set_points.y = self.calculate_set_point_angle(drone_state.pitch, control_signals.pitch)
+        self.set_points.z = self.calculate_yaw_set_point(drone_state.throttle, control_signals.yaw)
         
         return self.set_points
     
-    def get_last_set_points(self) -> State:
+    def get_last_set_points(self) -> Vector:
         return self.set_points
