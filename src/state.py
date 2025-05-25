@@ -16,6 +16,8 @@ class State:
         self.pitch = 0.0
         self.yaw = 0.0
         self.roll = 0.0
+        
+        self.drone_status = 'STOPPED'
     
     def update_state(self, data: RawSensorData) -> None:
         self.update_state(data.gyro.x, data.gyro.y, data.gyro.z, data.acc.x, data.acc.y, data.acc.z)    
@@ -76,5 +78,16 @@ class State:
         if abs(self.acc_raw.y) < acceloration:
             self.acc_angle.set_y(math.asin(self.acc_raw.x / acceloration) * (180 / math.pi))
 
+    def is_drone_stopped(self):
+        return self.drone_status == "STOPPED"
+    
+    def is_drone_starting(self):
+        return self.drone_status == "STARTING"
+    
+    def is_drone_started(self):
+        return self.drone_status == "STARTED"
+    
+    def set_drone_status(self, status: str):
+        self.drone_status = status
         
     

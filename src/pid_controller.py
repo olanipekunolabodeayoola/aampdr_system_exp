@@ -14,6 +14,9 @@ class PID:
         self.MIN_SETPOINT_BOUNDARY = 1492
         self.MAX_SETPOINT_BOUNDARY = 1508
         self.TROTTLE_UP_BLOUDARY = 1050
+        self.ARM_BOUNDARY = 1012
+        self.LOWER_ESC = 1100
+        self.HIGHER_ESC = 2000
         
         self.set_points = Vector()
         self.error = Vector()
@@ -22,7 +25,29 @@ class PID:
         self.delta_error = Vector()
         self.prev_error = Vector()
         
+        self.KP = KP
+        self.KI = KI
+        self.KD = KD
+        
         self.clip_values.update(KI.x/400, KI.y/400, KI.z/400)
+        
+        self.esc_a: float = 0.0
+        self.esc_b: float = 0.0
+        self.esc_c: float = 0.0
+        self.esc_d: float = 0.0
+        
+        """
+        A    B
+          \/
+          /\
+        C    D
+        
+        A, D : Clockwise
+        B, C : Counter Clockwise
+        
+        ^
+        | = Forward
+        """
     
     def calculate_set_point_angle(self, angle: float, channel_pulse: float) -> float:
         
@@ -84,4 +109,45 @@ class PID:
         
         self.prev_error.fill_vector(self.error)
         
+    def reset(self):
+        self.error.reset()
+        self.error_sum.reset()
+        self.prev_error.reset()
+        self.delta_error.reset()
+        
+    def stop_all_esc(self):
+        self.esc_a = 1000
+        self.esc_b = 1000
+        self.esc_c = 1000
+        self.esc_d = 1000
+        
+    def run(self, control: Control) -> None:
+        
+        pid_values = Vector()
+        
+        self.esc_a = control.throttle
+        self.esc_b = control.throttle
+        self.esc_c = control.throttle
+        self.esc_d = control.throttle
+        
+        if control.throttle > self.ARM_BOUNDARY:
+            
+            pid_values.set(
+                (self.error.x * self.KP.x) + (self.error_sum.x * self.KI.x) + (self.delta_error.x * self.KD.x),
+                (self.error.y * self.KP.y) + (self.error_sum.y * self.KI.y) + (self.delta_error.y * self.KD.y),
+                (self.error.z * self.KP.z) + (self.error_sum.z * self.KI.z) + (self.delta_error.z * self.KD.z)
+            )
+            
+            pid_values.set(clip(pid_values.x, -400, 400), clip(pid_values.y, -400, 400), clip(pid_values.z, -400, 400))
+            
+            self.esc_a = control.throttle - pid_values.x - pid_values.y + pid_values.z
+            self.esc_b = control.throttle + pid_values.x - pid_values.y - pid_values.z
+            self.esc_c = control.throttle - pid_values.x + pid_values.y - pid_values.z
+            self.esc_d = control.throttle + pid_values.x + pid_values.y + pid_values.z
+            
+        
+        self.esc_a = clip(self.esc_a, self.LOWER_ESC, self.HIGHER_ESC)
+        self.esc_b = clip(self.esc_b, self.LOWER_ESC, self.HIGHER_ESC)
+        self.esc_c = clip(self.esc_c, self.LOWER_ESC, self.HIGHER_ESC)
+        self.esc_d = clip(self.esc_d, self.LOWER_ESC, self.HIGHER_ESC)
         

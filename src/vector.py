@@ -42,3 +42,6 @@ class Vector:
         
     def calculate_size(self):
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
+    
+    def reset(self, value: float = 0.0):
+        self.set(value, value, value)
