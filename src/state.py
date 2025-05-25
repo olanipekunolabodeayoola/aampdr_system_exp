@@ -1,47 +1,6 @@
+from vector import Vector
+from sensors import RawSensorData
 import math
-class Vector:
-    
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
-        
-    def update_x(self, x: float) -> None:
-        self.x += x
-        
-    def update_y(self, y: float) -> None:
-        self.y += y
-    
-    def update_z(self, z: float) -> None:
-        self.y += z
-        
-    def update(self, x: float, y: float, z: float) -> None:
-        self.update_x(x)
-        self.update_y(y)
-        self.update_z(z)
-        
-    def set_x(self, x: float) -> None:
-        self.x = x
-        
-    def set_y(self, y: float) -> None:
-        self.y = y
-    
-    def set_z(self, z: float) -> None:
-        self.y = z
-        
-    def set(self, x: float, y: float, z: float) -> None:
-        self.set_x(x)
-        self.set_y(y)
-        self.set_z(z)
-        
-    def fill_vector(self, v) -> None:
-        self.x = v.x
-        self.y = v.y
-        self.z = v.z
-        
-    def calculate_size(self):
-        return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
-
 class State:
     
     def __init__(self):
@@ -56,8 +15,13 @@ class State:
         
         self.pitch = 0.0
         self.yaw = 0.0
-        self.throttle = 0.0
+        self.roll = 0.0
         
+        self.drone_status = 'STOPPED'
+    
+    def update_state(self, data: RawSensorData) -> None:
+        self.update_state(data.gyro.x, data.gyro.y, data.gyro.z, data.acc.x, data.acc.y, data.acc.z)    
+    
     def update_state(self, gyro_raw_x: float, gyro_raw_y: float, gyro_raw_z: float, acc_raw_x: float, acc_raw_y: float, acc_raw_z: float)->None:
         
         self.gyro_raw.set(gyro_raw_x, gyro_raw_y, gyro_raw_z)
@@ -79,7 +43,7 @@ class State:
             self.gyro_angle.z
         )
         
-        self.row = 0.7 * self.row  + 0.3 * self.gyro_raw.x
+        self.roll = 0.7 * self.roll  + 0.3 * self.gyro_raw.x
         self.pitch = 0.7 * self.pitch  + 0.3 * self.gyro_raw.y
         self.yaw = 0.7 * self.yaw  + 0.3 * self.gyro_raw.z
     
@@ -114,5 +78,16 @@ class State:
         if abs(self.acc_raw.y) < acceloration:
             self.acc_angle.set_y(math.asin(self.acc_raw.x / acceloration) * (180 / math.pi))
 
+    def is_drone_stopped(self):
+        return self.drone_status == "STOPPED"
+    
+    def is_drone_starting(self):
+        return self.drone_status == "STARTING"
+    
+    def is_drone_started(self):
+        return self.drone_status == "STARTED"
+    
+    def set_drone_status(self, status: str):
+        self.drone_status = status
         
     
