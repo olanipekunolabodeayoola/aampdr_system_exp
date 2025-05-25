@@ -41,7 +41,7 @@ class State:
             self.gyro_angle.z
         )
         
-        self.row = 0.7 * self.row  + 0.3 * self.gyro_raw.x
+        self.roll = 0.7 * self.roll  + 0.3 * self.gyro_raw.x
         self.pitch = 0.7 * self.pitch  + 0.3 * self.gyro_raw.y
         self.yaw = 0.7 * self.yaw  + 0.3 * self.gyro_raw.z
     

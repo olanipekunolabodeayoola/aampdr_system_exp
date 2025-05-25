@@ -28,3 +28,5 @@ class Drone:
             
             self.pid.calculate_set_points(self.state, self.control)
             
+            self.pid.calculate_errors(self.state)
+            
